@@ -1,9 +1,23 @@
 package de.intranda.goobi.plugins;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.io.input.BOMInputStream;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Row.MissingCellPolicy;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.goobi.production.enums.ImportType;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.importer.DocstructElement;
@@ -26,7 +40,7 @@ import ugh.dl.Prefs;
 public class BKAImportPlugin implements IImportPluginVersion2 {
 
     @Getter
-    private String title = "intranda-import-kba";
+    private String title = "intranda-import-bka";
     @Getter
     private PluginType type = PluginType.Import;
 
@@ -46,6 +60,10 @@ public class BKAImportPlugin implements IImportPluginVersion2 {
     @Setter
     private boolean testMode = false;
 
+    @Getter
+    @Setter
+    private File file;
+
     public BKAImportPlugin() {
         importTypes = new ArrayList<>();
         importTypes.add(ImportType.FILE);
@@ -60,7 +78,15 @@ public class BKAImportPlugin implements IImportPluginVersion2 {
     public List<ImportObject> generateFiles(List<Record> records) {
         List<ImportObject> answer = new ArrayList<>();
         for (Record record : records) {
-            String ppn = record.getId();
+            String title = record.getId();
+
+            List<Map<?, ?>> data = (List<Map<?, ?>>) record.getObject();
+            Map<String, Integer> headerMap = (Map<String, Integer>) data.get(0);
+            List<Map<?, ?>> rows =   data.subList(1, data.size());
+
+            System.out.println("process: " + title);
+            System.out.println(headerMap);
+            System.out.println(rows);
 
         }
 
@@ -95,7 +121,120 @@ public class BKAImportPlugin implements IImportPluginVersion2 {
 
     @Override
     public List<Record> generateRecordsFromFile() {
-        return null;
+
+        List<Record> recordList = new ArrayList<>();
+        Map<String, Integer> headerOrder = new HashMap<>();
+
+        InputStream fileInputStream = null;
+        try {
+            fileInputStream = new FileInputStream(file);
+            BOMInputStream in = new BOMInputStream(fileInputStream, false);
+            Workbook wb = WorkbookFactory.create(in);
+            Sheet sheet = wb.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.rowIterator();
+
+            // get header and data row number from config first
+            int rowHeader = 1;
+            int rowDataStart = 1;
+            int rowDataEnd = 10000;
+            int rowCounter = 0;
+
+            //  find the header row
+            Row headerRow = null;
+            while (rowCounter < rowHeader) {
+                headerRow = rowIterator.next();
+                rowCounter++;
+            }
+
+            //  read and validate the header row
+            int numberOfCells = headerRow.getLastCellNum();
+            for (int i = 0; i < numberOfCells; i++) {
+                Cell cell = headerRow.getCell(i);
+                if (cell != null) {
+                    cell.setCellType(CellType.STRING);
+                    String value = cell.getStringCellValue();
+                    headerOrder.put(value, i);
+                }
+            }
+
+            // find out the first data row
+            while (rowCounter < rowDataStart - 1) {
+                headerRow = rowIterator.next();
+                rowCounter++;
+            }
+
+            Map<String, List<Map<?, ?>>> processMap = new HashMap<>();
+
+            // run through all the data rows
+            while (rowIterator.hasNext() && rowCounter < rowDataEnd) {
+                Map<Integer, String> map = new HashMap<>();
+                Row row = rowIterator.next();
+                rowCounter++;
+                int lastColumn = row.getLastCellNum();
+                if (lastColumn == -1) {
+                    continue;
+                }
+                for (int cn = 0; cn < lastColumn; cn++) {
+                    //                while (cellIterator.hasNext()) {
+                    //                    Cell cell = cellIterator.next();
+                    Cell cell = row.getCell(cn, MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                    String value = "";
+                    switch (cell.getCellTypeEnum()) {
+                        case BOOLEAN:
+                            value = cell.getBooleanCellValue() ? "true" : "false";
+                            break;
+                        case FORMULA:
+                            //                            value = cell.getCellFormula();
+                            value = cell.getRichStringCellValue().getString();
+                            break;
+                        case NUMERIC:
+                            value = String.valueOf((int) cell.getNumericCellValue());
+                            break;
+                        case STRING:
+                            value = cell.getStringCellValue();
+                            break;
+                        default:
+                            // none, error, blank
+                            value = "";
+                            break;
+                    }
+                    map.put(cn, value);
+                }
+                // id = Objekttitel + FotografIn + Aufnahmejahr
+                String title = map.get(headerOrder.get("Objekttitel")) + "_" + map.get(headerOrder.get("FotografIn")) + "_" + map.get(headerOrder.get("Aufnahmejahr"));
+
+                if (processMap.containsKey(title)) {
+                    List<Map<?, ?>> rows = processMap.get(title);
+                    rows.add(map);
+                } else {
+                    List<Map<?, ?>> rows = new ArrayList<>();
+                    rows.add(headerOrder);
+                    rows.add(map);
+                    processMap.put(title, rows);
+                }
+
+            }
+            for (String title : processMap.keySet()) {
+                Record r = new Record();
+                r.setId(title);
+                r.setObject(processMap.get(title));
+                recordList.add(r);
+
+            }
+
+        } catch (Exception e) {
+            log.error(e);
+        } finally {
+            if (fileInputStream != null) {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    log.error(e);
+                }
+            }
+        }
+
+        return recordList;
     }
 
     @Override
@@ -142,12 +281,8 @@ public class BKAImportPlugin implements IImportPluginVersion2 {
     }
 
     @Override
-    public void setFile(File arg0) {
-    }
-
-    @Override
     public boolean isRunnableAsGoobiScript() {
-        return true;
+        return false;
     }
 
 }
