@@ -1,10 +1,9 @@
 <?xml version="1.0"?>
-
 <project name="goobi-plugin-step-mixedocr" default="devbuild">
 	<target name="devbuild">
 		<exec executable="mvn">
 			<arg value="package" />
 		</exec>
-		<copy file="target/plugin_intranda_import_bka.jar" todir="/opt/digiverso/goobi/plugins/import/"/>
+		<copy file="target/plugin_intranda_import_bka_bda.jar" todir="/opt/digiverso/goobi/plugins/import/"/>
 	</target>
 </project>

@@ -13,7 +13,7 @@ import org.junit.rules.TemporaryFolder;
 
 import ugh.dl.Prefs;
 
-public class BKAImportPluginTest {
+public class BkaBdaImportPluginTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
@@ -27,7 +27,7 @@ public class BKAImportPluginTest {
 
     @Test
     public void testConstructor() {
-        BKAImportPlugin plugin = new BKAImportPlugin();
+        BkaBdaImportPlugin plugin = new BkaBdaImportPlugin();
         assertNotNull(plugin);
         assertEquals(ImportType.FILE, plugin.getImportTypes().get(0));
 
@@ -36,7 +36,7 @@ public class BKAImportPluginTest {
 
     @Test
     public void testCreateMetsFiles() throws Exception {
-        BKAImportPlugin plugin = new BKAImportPlugin();
+        BkaBdaImportPlugin plugin = new BkaBdaImportPlugin();
         plugin.setImportFolder(tempFolder.getAbsolutePath());
         plugin.setTestMode(true); // ruleset
         Prefs prefs = new Prefs();

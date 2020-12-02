@@ -4,7 +4,7 @@
 	<artifactId>goobi-plugin-bka</artifactId>
 	<version>1.0.0</version>
 	<properties>
-		<jar.name>plugin_intranda_import_bka</jar.name>
+		<jar.name>plugin_intranda_import_bka_bda</jar.name>
 		<dest.folder>/opt/digiverso/goobi/plugins/import/</dest.folder>
 	</properties>
     <distributionManagement>

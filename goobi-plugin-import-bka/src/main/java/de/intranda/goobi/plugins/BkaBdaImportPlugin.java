@@ -37,10 +37,10 @@ import ugh.dl.Prefs;
 
 @PluginImplementation
 @Log4j2
-public class BKAImportPlugin implements IImportPluginVersion2 {
+public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
     @Getter
-    private String title = "intranda-import-bka";
+    private String title = "intranda-import-bka-bda";
     @Getter
     private PluginType type = PluginType.Import;
 
@@ -64,7 +64,7 @@ public class BKAImportPlugin implements IImportPluginVersion2 {
     @Setter
     private File file;
 
-    public BKAImportPlugin() {
+    public BkaBdaImportPlugin() {
         importTypes = new ArrayList<>();
         importTypes.add(ImportType.FILE);
     }
