@@ -1,0 +1,46 @@
+<config_plugin>
+	<config>
+		<!-- which workflow template shall be used -->
+		<template>*</template>
+		<!-- publication type to create -->
+		<publicationType>Document</publicationType>
+        <imageType>Photograph</imageType>
+		<!-- which digital collection to use
+	
+		<collection>General</collection>
+		 -->
+		<processTitleColumn>Vorgang</processTitleColumn>
+		<!-- define in which row the header is written, usually 1 -->
+		<rowHeader>1</rowHeader>
+		<!-- define in which row the data starts, usually 2 -->
+		<rowDataStart>1</rowDataStart>
+		<!-- define in which row the data ends, usually 20000 -->
+		<rowDataEnd>10000</rowDataEnd>
+	
+        <imageFolderHeaderName>Importpfad Bildobjekt</imageFolderHeaderName>
+
+		<mainMetadata rulesetName="CatalogIDDigital" columnName="DMDB-ID" />
+		<mainMetadata rulesetName="HerisID" columnName="HERIS-ID" />
+		<mainMetadata rulesetName="State" columnName="Bundesland" />
+		<mainMetadata rulesetName="Location" columnName="Ort" />
+		<mainMetadata rulesetName="Address" columnName="Adresse" />
+		<mainMetadata rulesetName="TitleDocMain" columnName="Objekttitel" />
+		<mainMetadata rulesetName="Photographer" columnName="FotografIn" />
+		<mainMetadata rulesetName="DateRecorded" columnName="Aufnahmejahr" />
+		<mainMetadata rulesetName="DateRecordedInformation" columnName="Aufnahmedatum Zusatzinfo" />
+		<mainMetadata rulesetName="KeyNumber" columnName="GZ" />
+		<mainMetadata rulesetName="Condition" columnName="Erhaltungszustand des Objekts" />
+		<mainMetadata rulesetName="Remarks" columnName="Sonstiges/Anmerkungen" />
+		<mainMetadata rulesetName="ObjectType" columnName="Objekttyp" />
+		<mainMetadata rulesetName="Series" columnName="Serie" />
+		<mainMetadata rulesetName="SubSeries" columnName="Unterserie" />
+
+		<imageMetadata rulesetName="View" columnName="Ansicht" />
+		<imageMetadata rulesetName="shelfmarksource" columnName="Signatur" />
+		<imageMetadata rulesetName="FormerFilePath" columnName="Ursprünglicher Dateipfad" />
+		<imageMetadata rulesetName="Copyright" columnName="Rechteinhaber" />
+		<imageMetadata rulesetName="ImportPath" columnName="Importpfad Bildobjekt" />
+
+
+	</config>
+</config_plugin>
