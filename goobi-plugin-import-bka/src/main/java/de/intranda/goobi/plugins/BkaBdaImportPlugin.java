@@ -110,6 +110,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<ImportObject> generateFiles(List<Record> records) {
         if (StringUtils.isBlank(workflowTitle)) {
@@ -163,6 +164,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                         logical.addMetadata(md);
                     }
                 }
+
                 int currentPhysicalOrder = 0;
 
                 for (Map<?, ?> rawRow : rows) {
@@ -204,6 +206,22 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                             ds.addMetadata(md);
                         }
                     }
+                    // add collections if configured
+                    MetadataType collectionType = prefs.getMetadataTypeByName("singleDigCollection");
+                    if (StringUtils.isNotBlank(collection)) {
+                        Metadata mdColl = new Metadata(collectionType);
+                        mdColl.setValue(collection);
+                        logical.addMetadata(mdColl);
+                    }
+                    // and add all collections that where selected
+                    for (String colItem : form.getDigitalCollections()) {
+                        if (!colItem.equals(collection.trim())) {
+                            Metadata mdColl = new Metadata(collectionType);
+                            mdColl.setValue(colItem);
+                            logical.addMetadata(mdColl);
+                        }
+                    }
+
                 }
                 String fileName = getImportFolder() + File.separator + title + ".xml";
                 io.setProcessTitle(title);
@@ -215,8 +233,12 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                 io.setImportReturnValue(ImportReturnValue.WriteError);
             }
 
-            // TODO copy images to folder
+            for (Map<?, ?> rawRow : rows) {
+                Map<Integer, String> row = (Map<Integer, String>) rawRow;
+                String imageName = row.get(headerMap.get(imageFolderHeaderName));
+                // TODO copy images
 
+            }
             io.setProcessTitle(title);
             answer.add(io);
         }
