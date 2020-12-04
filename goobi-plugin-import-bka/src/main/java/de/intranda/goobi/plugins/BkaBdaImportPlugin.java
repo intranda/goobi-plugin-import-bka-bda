@@ -214,14 +214,15 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                         logical.addMetadata(mdColl);
                     }
                     // and add all collections that where selected
-                    for (String colItem : form.getDigitalCollections()) {
-                        if (!colItem.equals(collection.trim())) {
-                            Metadata mdColl = new Metadata(collectionType);
-                            mdColl.setValue(colItem);
-                            logical.addMetadata(mdColl);
+                    if (form != null) {
+                        for (String colItem : form.getDigitalCollections()) {
+                            if (!colItem.equals(collection.trim())) {
+                                Metadata mdColl = new Metadata(collectionType);
+                                mdColl.setValue(colItem);
+                                logical.addMetadata(mdColl);
+                            }
                         }
                     }
-
                 }
                 String fileName = getImportFolder() + File.separator + title + ".xml";
                 io.setProcessTitle(title);
