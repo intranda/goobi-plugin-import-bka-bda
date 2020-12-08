@@ -89,10 +89,8 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
     private String publicationType;
     private String imageType;
 
-    private String imageFolderPath;
+    private String imageFolderRootPath;
     private String imageFolderHeaderName;
-
-    private boolean runAsGoobiScript;
 
     private List<StringPair> mainMetadataList;
     private List<StringPair> imageMetadataList;
@@ -236,7 +234,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
             for (Map<?, ?> rawRow : rows) {
                 Map<Integer, String> row = (Map<Integer, String>) rawRow;
-                String imageName = row.get(headerMap.get(imageFolderHeaderName));
+                String imageName = imageFolderRootPath + row.get(headerMap.get(imageFolderHeaderName));
                 // TODO copy images
 
             }
@@ -266,10 +264,8 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
             publicationType = myconfig.getString("/publicationType", "Monograph");
             imageType = myconfig.getString("/imageType", "Picture");
 
-            imageFolderPath = myconfig.getString("/imageFolderPath", null);
+            imageFolderRootPath = myconfig.getString("/imageFolderPath", null);
             imageFolderHeaderName = myconfig.getString("/imageFolderHeaderName", null);
-
-            runAsGoobiScript = myconfig.getBoolean("/runAsGoobiScript", true);
 
             collection = myconfig.getString("/collection", null);
             processTitleColumn = myconfig.getString("/processTitleColumn", null);
@@ -483,7 +479,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
     @Override
     public boolean isRunnableAsGoobiScript() {
-        return runAsGoobiScript;
+        return true;
     }
 
 }

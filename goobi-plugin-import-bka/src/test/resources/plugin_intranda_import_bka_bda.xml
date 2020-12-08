@@ -21,7 +21,7 @@
 
 		<mainMetadata rulesetName="CatalogIDDigital" columnName="DMDB-ID" />
 		<mainMetadata rulesetName="HerisID" columnName="HERIS-ID" />
-		<mainMetadata rulesetName="State" columnName="Bundesland" />
+		<mainMetadata rulesetName="FederalState" columnName="Bundesland" />
 		<mainMetadata rulesetName="Location" columnName="Ort" />
 		<mainMetadata rulesetName="Address" columnName="Adresse" />
 		<mainMetadata rulesetName="TitleDocMain" columnName="Objekttitel" />
