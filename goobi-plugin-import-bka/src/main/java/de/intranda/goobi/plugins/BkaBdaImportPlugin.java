@@ -158,6 +158,10 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                     if (StringUtils.isNotBlank(metadataValue)) {
                         MetadataType type = prefs.getMetadataTypeByName(rulesetName);
                         Metadata md = new Metadata(type);
+                        if (rulesetName.equals("CatalogIDDigital")) {
+                            metadataValue = metadataValue.replaceAll("\\W", "_");
+                        }
+
                         md.setValue(metadataValue);
                         logical.addMetadata(md);
                     }
@@ -267,7 +271,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
             imageFolderRootPath = myconfig.getString("/imageFolderPath", null);
             imageFolderHeaderName = myconfig.getString("/imageFolderHeaderName", null);
 
-            collection = myconfig.getString("/collection", null);
+            collection = myconfig.getString("/collection", "");
             processTitleColumn = myconfig.getString("/processTitleColumn", null);
 
             mainMetadataList = new ArrayList<>();
@@ -479,7 +483,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
     @Override
     public boolean isRunnableAsGoobiScript() {
-        return true;
+        return false;
     }
 
 }
