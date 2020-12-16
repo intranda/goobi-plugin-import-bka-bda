@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,7 +38,9 @@ import org.goobi.production.plugin.interfaces.IImportPluginVersion2;
 import org.goobi.production.properties.ImportProperty;
 
 import de.sub.goobi.config.ConfigPlugins;
+import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.forms.MassImportForm;
+import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.exceptions.ImportPluginException;
 import lombok.Getter;
 import lombok.Setter;
@@ -132,7 +137,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
             List<Map<?, ?>> data = (List<Map<?, ?>>) record.getObject();
             Map<String, Integer> headerMap = (Map<String, Integer>) data.get(0);
             List<Map<?, ?>> rows = data.subList(1, data.size());
-
+            String fileName =null;
             // create new mets file
             try {
                 Fileformat fileformat = new MetsMods(prefs);
@@ -166,6 +171,24 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                         logical.addMetadata(md);
                     }
                 }
+                // add collections if configured
+                MetadataType collectionType = prefs.getMetadataTypeByName("singleDigCollection");
+                if (StringUtils.isNotBlank(collection)) {
+                    Metadata mdColl = new Metadata(collectionType);
+                    mdColl.setValue(collection);
+                    logical.addMetadata(mdColl);
+                }
+                // and add all collections that where selected
+                if (form != null) {
+                    for (String colItem : form.getDigitalCollections()) {
+                        if (!colItem.equals(collection.trim())) {
+                            Metadata mdColl = new Metadata(collectionType);
+                            mdColl.setValue(colItem);
+                            logical.addMetadata(mdColl);
+                        }
+                    }
+                }
+
 
                 int currentPhysicalOrder = 0;
 
@@ -208,25 +231,9 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                             ds.addMetadata(md);
                         }
                     }
-                    // add collections if configured
-                    MetadataType collectionType = prefs.getMetadataTypeByName("singleDigCollection");
-                    if (StringUtils.isNotBlank(collection)) {
-                        Metadata mdColl = new Metadata(collectionType);
-                        mdColl.setValue(collection);
-                        logical.addMetadata(mdColl);
-                    }
-                    // and add all collections that where selected
-                    if (form != null) {
-                        for (String colItem : form.getDigitalCollections()) {
-                            if (!colItem.equals(collection.trim())) {
-                                Metadata mdColl = new Metadata(collectionType);
-                                mdColl.setValue(colItem);
-                                logical.addMetadata(mdColl);
-                            }
-                        }
-                    }
+
                 }
-                String fileName = getImportFolder() + File.separator + title + ".xml";
+                fileName = getImportFolder() + File.separator + title + ".xml";
                 io.setProcessTitle(title);
                 io.setMetsFilename(fileName);
                 fileformat.write(fileName);
@@ -238,7 +245,29 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
             for (Map<?, ?> rawRow : rows) {
                 Map<Integer, String> row = (Map<Integer, String>) rawRow;
-                String imageName = imageFolderRootPath + row.get(headerMap.get(imageFolderHeaderName));
+                Path image = Paths.get(imageFolderRootPath , row.get(headerMap.get(imageFolderHeaderName)).replace("\\", "/"));
+                // copy/move
+                if (Files.exists(image)) {
+                    String destinationFolderNameRule = ConfigurationHelper.getInstance().getProcessImagesMasterDirectoryName();
+                    destinationFolderNameRule=destinationFolderNameRule.replace("{processtitle}", io.getProcessTitle());
+
+                    String foldername = fileName.replace(".xml", "");
+
+
+
+                    Path path = Paths.get(foldername, "images", destinationFolderNameRule, image.getFileName().toString());
+                    try {
+                        Files.createDirectories(path.getParent());
+                        //                        if (config.isMoveImage()) {
+                        //                            StorageProvider.getInstance().move(imageSourceFolder, path);
+                        //                        } else {
+                        StorageProvider.getInstance().copyFile(image, path);
+                        //                        }
+                    } catch (IOException e) {
+                        log.error(e);
+                    }
+
+                }
                 // TODO copy images
 
             }
