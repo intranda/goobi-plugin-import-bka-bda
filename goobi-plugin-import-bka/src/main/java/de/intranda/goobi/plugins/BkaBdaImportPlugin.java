@@ -139,9 +139,9 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
             // TODO: find out why this can be empty and if this only happens when executed via GoobiScript
             List<Map<?, ?>> data = (List<Map<?, ?>>) record.getObject();
             if (data==null) {
-                break;
+                continue;
             }
-            
+
             Map<String, Integer> headerMap = (Map<String, Integer>) data.get(0);
             List<Map<?, ?>> rows = data.subList(1, data.size());
             String fileName =null;
@@ -257,11 +257,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                 if (Files.exists(image)) {
                     String destinationFolderNameRule = ConfigurationHelper.getInstance().getProcessImagesMasterDirectoryName();
                     destinationFolderNameRule=destinationFolderNameRule.replace("{processtitle}", io.getProcessTitle());
-
                     String foldername = fileName.replace(".xml", "");
-
-
-
                     Path path = Paths.get(foldername, "images", destinationFolderNameRule, image.getFileName().toString());
                     try {
                         Files.createDirectories(path.getParent());
@@ -273,10 +269,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                     } catch (IOException e) {
                         log.error(e);
                     }
-
                 }
-                // TODO copy images
-
             }
             io.setProcessTitle(title);
             answer.add(io);
@@ -304,7 +297,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
             publicationType = myconfig.getString("/publicationType", "Monograph");
             imageType = myconfig.getString("/imageType", "Picture");
             runAsGoobiScript = myconfig.getBoolean("/runAsGoobiScript", false);
-            
+
             imageFolderRootPath = myconfig.getString("/imageFolderPath", null);
             imageFolderHeaderName = myconfig.getString("/imageFolderHeaderName", null);
 
@@ -439,7 +432,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                     map.put(cn, value);
                 }
                 // id = Objekttitel + FotografIn + Aufnahmejahr
-                String title = map.get(headerOrder.get(processTitleColumn));
+                String title = map.get(headerOrder.get(processTitleColumn)).replaceAll("\\W", "_");
 
                 if (processMap.containsKey(title)) {
                     List<Map<?, ?>> rows = processMap.get(title);

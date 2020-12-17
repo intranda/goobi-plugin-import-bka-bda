@@ -84,10 +84,10 @@ public class BkaBdaImportPluginTest {
         Map<String, Integer> headerMap = (Map<String, Integer>) data.get(0);
         List<Map<?, ?>> rows = data.subList(1, data.size());
 
-        assertEquals("2011323750B. XXXXXX2014", title);
+        assertEquals("1376717487B__XXXXXX2014", title);
         assertEquals(21, headerMap.size());
-        assertEquals(2, rows.size());
-        assertEquals("Schweizertrakt, Schweizerhof mit Hofburgkapelle, Schatzkammer", rows.get(0).get(headerMap.get("Objekttitel")));
+        assertEquals(11, rows.size());
+        assertEquals("Neue Burg, Nationalbibliothek (heutiger Lesesaal)", rows.get(0).get(headerMap.get("Objekttitel")));
     }
 
 
@@ -109,7 +109,7 @@ public class BkaBdaImportPluginTest {
 
         ImportObject io =  convertedFiles.get(0);
 
-        assertEquals("2011323750B__XXXXXX2014", io.getProcessTitle());
+        assertEquals("1376717487B__XXXXXX2014", io.getProcessTitle());
 
         // TODO open mets file, check metadata
 
