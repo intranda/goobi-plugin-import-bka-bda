@@ -16,7 +16,9 @@
 		<rowDataStart>1</rowDataStart>
 		<!-- define in which row the data ends, usually 20000 -->
 		<rowDataEnd>10000</rowDataEnd>
-	
+		<!-- define if import shall use GoobiScript to run in the background -->
+		<runAsGoobiScript>true</runAsGoobiScript>
+        
         <imageFolderHeaderName>Importpfad Bildobjekt</imageFolderHeaderName>
 
 		<mainMetadata rulesetName="CatalogIDDigital" columnName="DMDB-ID" />

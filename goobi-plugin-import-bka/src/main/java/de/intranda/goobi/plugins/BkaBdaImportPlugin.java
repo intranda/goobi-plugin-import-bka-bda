@@ -93,6 +93,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
     private int rowDataEnd;
     private String publicationType;
     private String imageType;
+    private boolean runAsGoobiScript = false;
 
     private String imageFolderRootPath;
     private String imageFolderHeaderName;
@@ -134,7 +135,13 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
             String title = record.getId().replaceAll("\\W", "_");
 
+            // get data from record, but skip all this if data is empty
+            // TODO: find out why this can be empty and if this only happens when executed via GoobiScript
             List<Map<?, ?>> data = (List<Map<?, ?>>) record.getObject();
+            if (data==null) {
+                break;
+            }
+            
             Map<String, Integer> headerMap = (Map<String, Integer>) data.get(0);
             List<Map<?, ?>> rows = data.subList(1, data.size());
             String fileName =null;
@@ -296,7 +303,8 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
             rowDataEnd = myconfig.getInt("/rowDataEnd", 20000);
             publicationType = myconfig.getString("/publicationType", "Monograph");
             imageType = myconfig.getString("/imageType", "Picture");
-
+            runAsGoobiScript = myconfig.getBoolean("/runAsGoobiScript", false);
+            
             imageFolderRootPath = myconfig.getString("/imageFolderPath", null);
             imageFolderHeaderName = myconfig.getString("/imageFolderHeaderName", null);
 
@@ -512,7 +520,8 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
     @Override
     public boolean isRunnableAsGoobiScript() {
-        return false;
+        readConfig();
+        return runAsGoobiScript;
     }
 
 }
