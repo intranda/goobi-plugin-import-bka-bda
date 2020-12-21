@@ -11,8 +11,8 @@ pipeline {
     buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '15', daysToKeepStr: '90', numToKeepStr: '')
   }
 
-  
-  
+
+
   stages {
     stage('prepare') {
       steps {
@@ -22,12 +22,12 @@ pipeline {
 
     stage('build') {
       steps {
-        sh 'mvn -f WeimarExportPlugin/pom.xml install'
+        sh 'mvn -f goobi-plugin-import-bka/pom.xml install'
         recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
       }
     }
   }
-  
+
   post {
     success {
       archiveArtifacts artifacts: '**/target/*.jar, */plugin_*.xml, plugin_*.xml', fingerprint: true, onlyIfSuccessful: true
