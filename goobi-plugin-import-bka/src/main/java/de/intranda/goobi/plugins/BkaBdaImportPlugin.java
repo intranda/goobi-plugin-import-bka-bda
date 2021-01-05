@@ -136,15 +136,14 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
             String title = record.getId().replaceAll("\\W", "_");
 
             // get data from record, but skip all this if data is empty
-            // TODO: find out why this can be empty and if this only happens when executed via GoobiScript
             List<Map<?, ?>> data = (List<Map<?, ?>>) record.getObject();
-            if (data==null) {
+            if (data == null) {
                 continue;
             }
 
             Map<String, Integer> headerMap = (Map<String, Integer>) data.get(0);
             List<Map<?, ?>> rows = data.subList(1, data.size());
-            String fileName =null;
+            String fileName = null;
             // create new mets file
             try {
                 Fileformat fileformat = new MetsMods(prefs);
@@ -162,6 +161,8 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                 DocStruct logical = dd.createDocStruct(logicalType);
                 dd.setLogicalDocStruct(logical);
                 // parse main metadata
+                String seriesName = "";
+                String subSeriesName = "";
                 Map<Integer, String> firstRow = (Map<Integer, String>) rows.get(0);
                 for (StringPair sp : mainMetadataList) {
                     String rulesetName = sp.getOne();
@@ -172,19 +173,31 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                         Metadata md = new Metadata(type);
                         if (rulesetName.equals("CatalogIDDigital")) {
                             metadataValue = metadataValue.replaceAll("\\W", "_");
+                        } else if (rulesetName.equals("Series")) {
+                            seriesName = metadataValue;
+                        } else if (rulesetName.equals("SubSeries")) {
+                            subSeriesName = metadataValue;
                         }
-
                         md.setValue(metadataValue);
                         logical.addMetadata(md);
                     }
                 }
-                // add collections if configured
+
+                // add main collection
                 MetadataType collectionType = prefs.getMetadataTypeByName("singleDigCollection");
+
+                String mainCollectionName = seriesName + "#" + subSeriesName;
+                Metadata mainColl = new Metadata(collectionType);
+                mainColl.setValue(mainCollectionName);
+                logical.addMetadata(mainColl);
+
+                // add collections if configured
                 if (StringUtils.isNotBlank(collection)) {
                     Metadata mdColl = new Metadata(collectionType);
                     mdColl.setValue(collection);
                     logical.addMetadata(mdColl);
                 }
+
                 // and add all collections that where selected
                 if (form != null) {
                     for (String colItem : form.getDigitalCollections()) {
@@ -195,7 +208,6 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                         }
                     }
                 }
-
 
                 int currentPhysicalOrder = 0;
 
@@ -252,11 +264,11 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
             for (Map<?, ?> rawRow : rows) {
                 Map<Integer, String> row = (Map<Integer, String>) rawRow;
-                Path image = Paths.get(imageFolderRootPath , row.get(headerMap.get(imageFolderHeaderName)).replace("\\", "/"));
+                Path image = Paths.get(imageFolderRootPath, row.get(headerMap.get(imageFolderHeaderName)).replace("\\", "/"));
                 // copy/move
                 if (Files.exists(image)) {
                     String destinationFolderNameRule = ConfigurationHelper.getInstance().getProcessImagesMasterDirectoryName();
-                    destinationFolderNameRule=destinationFolderNameRule.replace("{processtitle}", io.getProcessTitle());
+                    destinationFolderNameRule = destinationFolderNameRule.replace("{processtitle}", io.getProcessTitle());
                     String foldername = fileName.replace(".xml", "");
                     Path path = Paths.get(foldername, "images", destinationFolderNameRule, image.getFileName().toString());
                     try {
