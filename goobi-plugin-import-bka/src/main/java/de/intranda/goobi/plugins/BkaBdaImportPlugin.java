@@ -216,7 +216,8 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                     Map<Integer, String> row = (Map<Integer, String>) rawRow;
 
                     DocStruct page = dd.createDocStruct(pageType);
-                    page.setImageName(row.get(headerMap.get(imageFolderHeaderName)));
+                    Path image = Paths.get(imageFolderRootPath, row.get(headerMap.get(imageFolderHeaderName)).replace("\\", "/"));
+                    page.setImageName(image.getFileName().toString());
 
                     MetadataType mdt = prefs.getMetadataTypeByName("physPageNumber");
                     Metadata mdTemp = new Metadata(mdt);
