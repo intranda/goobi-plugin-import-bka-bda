@@ -216,7 +216,8 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                     Map<Integer, String> row = (Map<Integer, String>) rawRow;
 
                     DocStruct page = dd.createDocStruct(pageType);
-                    page.setImageName(row.get(headerMap.get(imageFolderHeaderName)));
+                    Path image = Paths.get(imageFolderRootPath, row.get(headerMap.get(imageFolderHeaderName)).replace("\\", "/"));
+                    page.setImageName(image.getFileName().toString().replace("  ", " "));
 
                     MetadataType mdt = prefs.getMetadataTypeByName("physPageNumber");
                     Metadata mdTemp = new Metadata(mdt);
@@ -270,7 +271,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                     String destinationFolderNameRule = ConfigurationHelper.getInstance().getProcessImagesMasterDirectoryName();
                     destinationFolderNameRule = destinationFolderNameRule.replace("{processtitle}", io.getProcessTitle());
                     String foldername = fileName.replace(".xml", "");
-                    Path path = Paths.get(foldername, "images", destinationFolderNameRule, image.getFileName().toString());
+                    Path path = Paths.get(foldername, "images", destinationFolderNameRule, image.getFileName().toString().replace("  ", " "));
                     try {
                         Files.createDirectories(path.getParent());
                         //                        if (config.isMoveImage()) {
