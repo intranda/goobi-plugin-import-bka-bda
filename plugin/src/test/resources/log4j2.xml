@@ -1,47 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
 	<Appenders>
-	    <!-- ******************************************************************* -->
-	    <!-- LOG File                                                                    -->
-	    <!-- ******************************************************************* -->
-	
-	    <RollingFile name="file" 
-	    	fileName="importlog.log" 
-	    	filePattern="/opt/digiverso/logs/goobi.log.%i" 
-	    	append="true">
-	    	<PatternLayout>
-	    		<Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n</Pattern>
-	    	</PatternLayout>
-	    	 <Policies>
-				<SizeBasedTriggeringPolicy size="5000MB" />
-			</Policies>
-			<DefaultRolloverStrategy max="5" />
-            
-	    </RollingFile>
-	
-	    <!-- ******************************************************************* -->
-	    <!-- STDOUT                                                              -->
-	    <!-- ******************************************************************* -->
-	
 	    <Console name="STDOUT" target="SYSTEM_OUT">
 	    	<PatternLayout pattern="%-4r %-5p (%F:%L) - %m%n"/>
 	    </Console>
     </Appenders>
-
-    <!-- ******************************************************************* -->
-    <!-- APPENDER                                                            -->
-    <!-- ******************************************************************* -->
-	<Loggers>
-       <Logger name="de.intranda.goobi.plugins" level="debug" additivity="false">
-            <AppenderRef ref="file" level="debug"/>
-             <AppenderRef ref="STDOUT" level="${env:LOG_LEVEL:-error}"/>
-       </Logger>    
-    
-	
-	    <Root level="error">
-	        <AppenderRef ref="file" />
+	<Loggers>     
+	    <Root level="fatal">
 	        <AppenderRef ref="STDOUT" />
 	    </Root>
     </Loggers>
-
 </Configuration>

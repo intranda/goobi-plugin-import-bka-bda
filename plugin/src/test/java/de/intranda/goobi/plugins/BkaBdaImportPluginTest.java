@@ -18,6 +18,7 @@ import org.goobi.production.enums.ImportType;
 import org.goobi.production.importer.ImportObject;
 import org.goobi.production.importer.Record;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -32,23 +33,31 @@ import ugh.dl.Prefs;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ConfigPlugins.class })
-@PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*" })
+@PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*", "jdk.internal.reflect.*" })
 public class BkaBdaImportPluginTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
     private File tempFolder;
-    private String resourcesFolder;
+    private static String resourcesFolder;
 
-    @Before
-    public void setUp() throws Exception {
-        tempFolder = folder.newFolder("tmp");
 
+    @BeforeClass
+    public static void setUpClass() throws Exception {
         resourcesFolder = "src/test/resources/"; // for junit tests in eclipse
 
         if (!Files.exists(Paths.get(resourcesFolder))) {
             resourcesFolder = "target/test-classes/"; // to run mvn test from cli or in jenkins
         }
+        String log4jFile = resourcesFolder + "log4j2.xml"; // for junit tests in eclipse
+        System.setProperty("log4j.configurationFile", log4jFile);
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        tempFolder = folder.newFolder("tmp");
+
+
 
         PowerMock.mockStatic(ConfigPlugins.class);
         EasyMock.expect(ConfigPlugins.getPluginConfig(EasyMock.anyString())).andReturn(getConfig()).anyTimes();
