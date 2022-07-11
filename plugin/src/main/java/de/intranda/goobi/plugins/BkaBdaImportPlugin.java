@@ -143,7 +143,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
             Map<String, Integer> headerMap = (Map<String, Integer>) data.get(0);
             List<Map<?, ?>> rows = data.subList(1, data.size());
-            String fileName = null;
+            String fileName = "";
             // create new mets file
             try {
                 Fileformat fileformat = new MetsMods(prefs);
@@ -374,110 +374,100 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
         List<Record> recordList = new ArrayList<>();
         Map<String, Integer> headerOrder = new HashMap<>();
 
-        InputStream fileInputStream = null;
         try {
-            fileInputStream = new FileInputStream(file);
-            BOMInputStream in = new BOMInputStream(fileInputStream, false);
-            Workbook wb = WorkbookFactory.create(in);
-            Sheet sheet = wb.getSheetAt(0);
-            Iterator<Row> rowIterator = sheet.rowIterator();
+            try (InputStream fileInputStream = new FileInputStream(file); BOMInputStream in = new BOMInputStream(fileInputStream, false);
+                    Workbook wb = WorkbookFactory.create(in)) {
+                Sheet sheet = wb.getSheetAt(0);
+                Iterator<Row> rowIterator = sheet.rowIterator();
 
-            // get header and data row number from config first
-            int rowCounter = 0;
+                // get header and data row number from config first
+                int rowCounter = 0;
 
-            //  find the header row
-            Row headerRow = null;
-            while (rowCounter < rowHeader) {
-                headerRow = rowIterator.next();
-                rowCounter++;
-            }
-
-            //  read and validate the header row
-            int numberOfCells = headerRow.getLastCellNum();
-            for (int i = 0; i < numberOfCells; i++) {
-                Cell cell = headerRow.getCell(i);
-                if (cell != null) {
-                    cell.setCellType(CellType.STRING);
-                    String value = cell.getStringCellValue();
-                    headerOrder.put(value, i);
+                //  find the header row
+                Row headerRow = null;
+                while (rowCounter < rowHeader) {
+                    headerRow = rowIterator.next();
+                    rowCounter++;
                 }
-            }
 
-            // find out the first data row
-            while (rowCounter < rowDataStart - 1) {
-                headerRow = rowIterator.next();
-                rowCounter++;
-            }
-
-            Map<String, List<Map<?, ?>>> processMap = new HashMap<>();
-
-            // run through all the data rows
-            while (rowIterator.hasNext() && rowCounter < rowDataEnd) {
-                Map<Integer, String> map = new HashMap<>();
-                Row row = rowIterator.next();
-                rowCounter++;
-                int lastColumn = row.getLastCellNum();
-                if (lastColumn == -1) {
-                    continue;
-                }
-                for (int cn = 0; cn < lastColumn; cn++) {
-                    //                while (cellIterator.hasNext()) {
-                    //                    Cell cell = cellIterator.next();
-                    Cell cell = row.getCell(cn, MissingCellPolicy.CREATE_NULL_AS_BLANK);
-                    String value = "";
-                    switch (cell.getCellType()) {
-                        case BOOLEAN:
-                            value = cell.getBooleanCellValue() ? "true" : "false";
-                            break;
-                        case FORMULA:
-                            //                            value = cell.getCellFormula();
-                            value = cell.getRichStringCellValue().getString();
-                            break;
-                        case NUMERIC:
-                            value = String.valueOf((int) cell.getNumericCellValue());
-                            break;
-                        case STRING:
-                            value = cell.getStringCellValue();
-                            break;
-                        default:
-                            // none, error, blank
-                            value = "";
-                            break;
+                //  read and validate the header row
+                int numberOfCells = headerRow.getLastCellNum();
+                for (int i = 0; i < numberOfCells; i++) {
+                    Cell cell = headerRow.getCell(i);
+                    if (cell != null) {
+                        cell.setCellType(CellType.STRING);
+                        String value = cell.getStringCellValue();
+                        headerOrder.put(value, i);
                     }
-                    map.put(cn, value);
-                }
-                // id = Objekttitel + FotografIn + Aufnahmejahr
-                String title = map.get(headerOrder.get(processTitleColumn)).replaceAll("\\W", "_");
-
-                if (processMap.containsKey(title)) {
-                    List<Map<?, ?>> rows = processMap.get(title);
-                    rows.add(map);
-                } else {
-                    List<Map<?, ?>> rows = new ArrayList<>();
-                    rows.add(headerOrder);
-                    rows.add(map);
-                    processMap.put(title, rows);
                 }
 
-            }
-            for (String title : processMap.keySet()) {
-                Record r = new Record();
-                r.setId(title);
-                r.setObject(processMap.get(title));
-                recordList.add(r);
+                // find out the first data row
+                while (rowCounter < rowDataStart - 1) {
+                    headerRow = rowIterator.next();
+                    rowCounter++;
+                }
 
-            }
+                Map<String, List<Map<?, ?>>> processMap = new HashMap<>();
 
+                // run through all the data rows
+                while (rowIterator.hasNext() && rowCounter < rowDataEnd) {
+                    Map<Integer, String> map = new HashMap<>();
+                    Row row = rowIterator.next();
+                    rowCounter++;
+                    int lastColumn = row.getLastCellNum();
+                    if (lastColumn == -1) {
+                        continue;
+                    }
+                    for (int cn = 0; cn < lastColumn; cn++) {
+                        //                while (cellIterator.hasNext()) {
+                        //                    Cell cell = cellIterator.next();
+                        Cell cell = row.getCell(cn, MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                        String value = "";
+                        switch (cell.getCellType()) {
+                            case BOOLEAN:
+                                value = cell.getBooleanCellValue() ? "true" : "false";
+                                break;
+                            case FORMULA:
+                                //                            value = cell.getCellFormula();
+                                value = cell.getRichStringCellValue().getString();
+                                break;
+                            case NUMERIC:
+                                value = String.valueOf((int) cell.getNumericCellValue());
+                                break;
+                            case STRING:
+                                value = cell.getStringCellValue();
+                                break;
+                            default:
+                                // none, error, blank
+                                value = "";
+                                break;
+                        }
+                        map.put(cn, value);
+                    }
+                    // id = Objekttitel + FotografIn + Aufnahmejahr
+                    String title = map.get(headerOrder.get(processTitleColumn)).replaceAll("\\W", "_");
+
+                    if (processMap.containsKey(title)) {
+                        List<Map<?, ?>> rows = processMap.get(title);
+                        rows.add(map);
+                    } else {
+                        List<Map<?, ?>> rows = new ArrayList<>();
+                        rows.add(headerOrder);
+                        rows.add(map);
+                        processMap.put(title, rows);
+                    }
+
+                }
+                for (String title : processMap.keySet()) {
+                    Record r = new Record();
+                    r.setId(title);
+                    r.setObject(processMap.get(title));
+                    recordList.add(r);
+
+                }
+            }
         } catch (Exception e) {
             log.error(e);
-        } finally {
-            if (fileInputStream != null) {
-                try {
-                    fileInputStream.close();
-                } catch (IOException e) {
-                    log.error(e);
-                }
-            }
         }
 
         return recordList;
