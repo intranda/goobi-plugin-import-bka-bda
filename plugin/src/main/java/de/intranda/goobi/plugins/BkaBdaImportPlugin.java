@@ -27,6 +27,7 @@ import org.apache.poi.ss.usermodel.Row.MissingCellPolicy;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.util.IOUtils;
 import org.goobi.production.cli.helper.StringPair;
 import org.goobi.production.enums.ImportReturnValue;
 import org.goobi.production.enums.ImportType;
@@ -370,7 +371,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
             workflowTitle = form.getTemplate().getTitel();
         }
         readConfig();
-
+        IOUtils.setByteArrayMaxOverride(200000000);
         List<Record> recordList = new ArrayList<>();
         Map<String, Integer> headerOrder = new HashMap<>();
 
