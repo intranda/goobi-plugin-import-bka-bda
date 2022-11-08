@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import de.sub.goobi.config.ConfigPlugins;
+import de.sub.goobi.config.ConfigurationHelper;
 import ugh.dl.Prefs;
 
 @RunWith(PowerMockRunner.class)
@@ -51,6 +53,11 @@ public class BkaBdaImportPluginTest {
         }
         String log4jFile = resourcesFolder + "log4j2.xml"; // for junit tests in eclipse
         System.setProperty("log4j.configurationFile", log4jFile);
+
+        Path goobiFolder = Paths.get(resourcesFolder + "/config/goobi_config.properties");
+        ConfigurationHelper.CONFIG_FILE_NAME = goobiFolder.toString();
+        ConfigurationHelper.resetConfigurationFile();
+        ConfigurationHelper.getInstance().setParameter("goobiFolder", goobiFolder.getParent().getParent().toString() + "/");
     }
 
     @Before
