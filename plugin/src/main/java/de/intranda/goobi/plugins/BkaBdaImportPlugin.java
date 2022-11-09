@@ -38,6 +38,19 @@ import org.goobi.production.importer.Record;
 import org.goobi.production.plugin.interfaces.IImportPluginVersion2;
 import org.goobi.production.properties.ImportProperty;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.transfer.Download;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
+
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.forms.MassImportForm;
@@ -60,6 +73,8 @@ import ugh.fileformats.mets.MetsMods;
 @PluginImplementation
 @Log4j2
 public class BkaBdaImportPlugin implements IImportPluginVersion2 {
+
+    private static final long serialVersionUID = -4293414218753369387L;
 
     @Getter
     private String title = "intranda_import_bka_bda";
@@ -99,11 +114,19 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
     private String imageFolderRootPath;
     private String imageFolderHeaderName;
 
+    private boolean useS3;
+    private String endpoint;
+    private String bucketName;
+    private String accessKey;
+    private String accessSecret;
+
     private List<StringPair> mainMetadataList;
     private List<StringPair> imageMetadataList;
 
     private String processTitleColumn;
     private String collection;
+
+    private static final long MB = 1024l * 1024l;
 
     public BkaBdaImportPlugin() {
         importTypes = new ArrayList<>();
@@ -122,6 +145,12 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
             workflowTitle = form.getTemplate().getTitel();
         }
         readConfig();
+        AmazonS3 s3client = null;
+        TransferManager tm = null;
+        if (useS3) {
+            s3client = createS3Client();
+            tm = createTransferManager(s3client);
+        }
 
         DocStructType physicalType = prefs.getDocStrctTypeByName("BoundBook");
         DocStructType imageDocstructType = prefs.getDocStrctTypeByName(imageType);
@@ -131,13 +160,13 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
         MetadataType pathimagefilesType = prefs.getMetadataTypeByName("pathimagefiles");
 
         List<ImportObject> answer = new ArrayList<>();
-        for (Record record : records) {
+        for (Record line : records) {
             ImportObject io = new ImportObject();
 
-            String title = record.getId().replaceAll("\\W", "_");
+            String title = line.getId().replaceAll("\\W", "_");
 
             // get data from record, but skip all this if data is empty
-            List<Map<?, ?>> data = (List<Map<?, ?>>) record.getObject();
+            List<Map<?, ?>> data = (List<Map<?, ?>>) line.getObject();
             if (data == null) {
                 continue;
             }
@@ -266,24 +295,33 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
             for (Map<?, ?> rawRow : rows) {
                 Map<Integer, String> row = (Map<Integer, String>) rawRow;
-                Path image = Paths.get(imageFolderRootPath, row.get(headerMap.get(imageFolderHeaderName)).replace("\\", "/"));
-                // copy/move
-                if (Files.exists(image)) {
-                    String destinationFolderNameRule = ConfigurationHelper.getInstance().getProcessImagesMasterDirectoryName();
-                    destinationFolderNameRule = destinationFolderNameRule.replace("{processtitle}", io.getProcessTitle());
-                    String foldername = fileName.replace(".xml", "");
-                    String imageName = image.getFileName().toString();
-                    imageName = imageName.replace("  ", " ").trim();
-                    Path path = Paths.get(foldername, "images", destinationFolderNameRule, imageName);
+                String destinationFolderNameRule = ConfigurationHelper.getInstance().getProcessImagesMasterDirectoryName();
+                destinationFolderNameRule = destinationFolderNameRule.replace("{processtitle}", io.getProcessTitle());
+                String foldername = fileName.replace(".xml", "");
+
+                if (useS3) {
                     try {
-                        Files.createDirectories(path.getParent());
-                        //                        if (config.isMoveImage()) {
-                        //                            StorageProvider.getInstance().move(imageSourceFolder, path);
-                        //                        } else {
-                        StorageProvider.getInstance().copyFile(image, path);
-                        //                        }
+                        Path destinationFolder = Paths.get(foldername, "images", destinationFolderNameRule);
+                        Files.createDirectories(destinationFolder);
+                        downloadImage(tm, row.get(headerMap.get(imageFolderHeaderName)), destinationFolder);
                     } catch (IOException e) {
                         log.error(e);
+                    }
+
+                } else {
+                    Path image = Paths.get(imageFolderRootPath, row.get(headerMap.get(imageFolderHeaderName)).replace("\\", "/"));
+                    // copy/move
+                    if (Files.exists(image)) {
+                        try {
+                            String imageName = image.getFileName().toString();
+                            imageName = imageName.replace("  ", " ").trim();
+                            Path path = Paths.get(foldername, "images", destinationFolderNameRule, imageName);
+
+                            Files.createDirectories(path.getParent());
+                            StorageProvider.getInstance().copyFile(image, path);
+                        } catch (IOException e) {
+                            log.error(e);
+                        }
                     }
                 }
             }
@@ -314,6 +352,14 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
             imageType = myconfig.getString("/imageType", "Picture");
             runAsGoobiScript = myconfig.getBoolean("/runAsGoobiScript", false);
 
+            useS3 = myconfig.getBoolean("/s3/@use", false);
+            if (useS3) {
+                endpoint = myconfig.getString("/s3/endpoint");
+                bucketName = myconfig.getString("/s3/bucketName");
+                accessKey = myconfig.getString("/s3/accessKey");
+                accessSecret = myconfig.getString("/s3/accessSecret");
+            }
+
             imageFolderRootPath = myconfig.getString("/imageFolderPath", null);
             imageFolderHeaderName = myconfig.getString("/imageFolderHeaderName", null);
 
@@ -341,9 +387,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
     @Override
     public List<Record> splitRecords(String string) {
-        List<Record> answer = new ArrayList<>();
-
-        return answer;
+        return null;
     }
 
     @Override
@@ -363,6 +407,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
     @Override
     public void deleteFiles(List<String> arg0) {
+        // nothing
     }
 
     @Override
@@ -420,8 +465,6 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                         continue;
                     }
                     for (int cn = 0; cn < lastColumn; cn++) {
-                        //                while (cellIterator.hasNext()) {
-                        //                    Cell cell = cellIterator.next();
                         Cell cell = row.getCell(cn, MissingCellPolicy.CREATE_NULL_AS_BLANK);
                         String value = "";
                         switch (cell.getCellType()) {
@@ -429,8 +472,12 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                                 value = cell.getBooleanCellValue() ? "true" : "false";
                                 break;
                             case FORMULA:
-                                //                            value = cell.getCellFormula();
-                                value = cell.getRichStringCellValue().getString();
+                                try {
+                                    value = cell.getRichStringCellValue().getString();
+                                } catch (Exception e1) {
+                                    // fix for stupid TRUE()/FALSE() formula
+                                    value = String.valueOf((int) cell.getNumericCellValue());
+                                }
                                 break;
                             case NUMERIC:
                                 value = String.valueOf((int) cell.getNumericCellValue());
@@ -459,10 +506,10 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                     }
 
                 }
-                for (String title : processMap.keySet()) {
+                for (String t : processMap.keySet()) {
                     Record r = new Record();
-                    r.setId(title);
-                    r.setObject(processMap.get(title));
+                    r.setId(t);
+                    r.setObject(processMap.get(t));
                     recordList.add(r);
 
                 }
@@ -511,16 +558,59 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
     @Override
     public void setData(Record arg0) {
+        // nothing
     }
 
     @Override
     public void setDocstruct(DocstructElement arg0) {
+        // nothing
     }
 
     @Override
     public boolean isRunnableAsGoobiScript() {
         readConfig();
         return runAsGoobiScript;
+    }
+
+    private AmazonS3 createS3Client() {
+
+        AWSCredentials credentials = new BasicAWSCredentials(accessKey, accessSecret);
+        ClientConfiguration clientConfiguration = new ClientConfiguration();
+        clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+
+        return AmazonS3ClientBuilder.standard()
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, Regions.US_EAST_1.name()))
+                .withPathStyleAccessEnabled(true)
+                .withClientConfiguration(clientConfiguration)
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .build();
+    }
+
+    private TransferManager createTransferManager(AmazonS3 s3) {
+
+        return TransferManagerBuilder.standard()
+                .withS3Client(s3)
+                .withDisableParallelDownloads(false)
+                .withMinimumUploadPartSize(Long.valueOf(5 * MB))
+                .withMultipartUploadThreshold(Long.valueOf(16 * MB))
+                .withMultipartCopyPartSize(Long.valueOf(5 * MB))
+                .withMultipartCopyThreshold(Long.valueOf(100 * MB))
+                .build();
+
+    }
+
+    public void downloadImage(TransferManager transferManager, String s3Key, Path destinationFolder) {
+
+        Path targetPath = Paths.get(destinationFolder.toString(), Paths.get(s3Key).getFileName().toString());
+        Download dl = transferManager.download(bucketName, s3Key, targetPath.toFile());
+        try {
+            dl.waitForCompletion();
+        } catch (AmazonClientException e) {
+            log.error(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
     }
 
 }
