@@ -119,6 +119,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
     private String bucketName;
     private String accessKey;
     private String accessSecret;
+    private String prefix;
 
     private List<StringPair> mainMetadataList;
     private List<StringPair> imageMetadataList;
@@ -215,17 +216,16 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
                 // add main collection
                 MetadataType collectionType = prefs.getMetadataTypeByName("singleDigCollection");
-
-                String mainCollectionName = seriesName + "#" + subSeriesName;
-                Metadata mainColl = new Metadata(collectionType);
-                mainColl.setValue(mainCollectionName);
-                logical.addMetadata(mainColl);
-
                 // add collections if configured
                 if (StringUtils.isNotBlank(collection)) {
                     Metadata mdColl = new Metadata(collectionType);
                     mdColl.setValue(collection);
                     logical.addMetadata(mdColl);
+                } else {
+                    String mainCollectionName = seriesName + "#" + subSeriesName;
+                    Metadata mainColl = new Metadata(collectionType);
+                    mainColl.setValue(mainCollectionName);
+                    logical.addMetadata(mainColl);
                 }
 
                 // and add all collections that where selected
@@ -303,7 +303,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                     try {
                         Path destinationFolder = Paths.get(foldername, "images", destinationFolderNameRule);
                         Files.createDirectories(destinationFolder);
-                        downloadImage(tm, row.get(headerMap.get(imageFolderHeaderName)), destinationFolder);
+                        downloadImage(tm, prefix + row.get(headerMap.get(imageFolderHeaderName)), destinationFolder);
                     } catch (IOException e) {
                         log.error(e);
                     }
@@ -358,6 +358,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                 bucketName = myconfig.getString("/s3/bucketName");
                 accessKey = myconfig.getString("/s3/accessKey");
                 accessSecret = myconfig.getString("/s3/accessSecret");
+                prefix = myconfig.getString("/s3/prefix");
             }
 
             imageFolderRootPath = myconfig.getString("/imageFolderPath", null);
