@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.SubnodeConfiguration;
@@ -141,7 +142,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
     @SuppressWarnings("unchecked")
     @Override
-    public List<ImportObject> generateFiles(List<Record> records) {
+    public List<ImportObject> generateFiles(List<Record> records) { //NOSONAR
         if (StringUtils.isBlank(workflowTitle)) {
             workflowTitle = form.getTemplate().getTitel();
         }
@@ -164,7 +165,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
         for (Record line : records) {
             ImportObject io = new ImportObject();
 
-            String title = line.getId().replaceAll("\\W", "_");
+            String lineTitle = line.getId().replaceAll("\\W", "_");
 
             // get data from record, but skip all this if data is empty
             List<Map<?, ?>> data = (List<Map<?, ?>>) line.getObject();
@@ -200,8 +201,8 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                     String columnName = sp.getTwo();
                     String metadataValue = firstRow.get(headerMap.get(columnName));
                     if (StringUtils.isNotBlank(metadataValue)) {
-                        MetadataType type = prefs.getMetadataTypeByName(rulesetName);
-                        Metadata md = new Metadata(type);
+                        MetadataType metadataType = prefs.getMetadataTypeByName(rulesetName);
+                        Metadata md = new Metadata(metadataType);
                         if (rulesetName.equals("CatalogIDDigital")) {
                             metadataValue = metadataValue.replaceAll("\\W", "_");
                         } else if (rulesetName.equals("Series")) {
@@ -275,16 +276,16 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                         String columnName = sp.getTwo();
                         String metadataValue = row.get(headerMap.get(columnName));
                         if (StringUtils.isNotBlank(metadataValue)) {
-                            MetadataType type = prefs.getMetadataTypeByName(rulesetName);
-                            Metadata md = new Metadata(type);
+                            MetadataType metadataType = prefs.getMetadataTypeByName(rulesetName);
+                            Metadata md = new Metadata(metadataType);
                             md.setValue(metadataValue);
                             ds.addMetadata(md);
                         }
                     }
 
                 }
-                fileName = getImportFolder() + File.separator + title + ".xml";
-                io.setProcessTitle(title);
+                fileName = getImportFolder() + File.separator + lineTitle + ".xml";
+                io.setProcessTitle(lineTitle);
                 io.setMetsFilename(fileName);
                 fileformat.write(fileName);
                 io.setImportReturnValue(ImportReturnValue.ExportFinished);
@@ -325,7 +326,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                     }
                 }
             }
-            io.setProcessTitle(title);
+            io.setProcessTitle(lineTitle);
             answer.add(io);
         }
 
@@ -388,12 +389,12 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
     @Override
     public List<Record> splitRecords(String string) {
-        return null;
+        return null;  //NOSONAR needs to be null
     }
 
     @Override
     public List<String> splitIds(String ids) {
-        return null;
+        return null;  //NOSONAR needs to be null
     }
 
     @Override
@@ -412,7 +413,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
     }
 
     @Override
-    public List<Record> generateRecordsFromFile() {
+    public List<Record> generateRecordsFromFile() {  //NOSONAR
         if (StringUtils.isBlank(workflowTitle)) {
             workflowTitle = form.getTemplate().getTitel();
         }
@@ -494,23 +495,23 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                         map.put(cn, value);
                     }
                     // id = Objekttitel + FotografIn + Aufnahmejahr
-                    String title = map.get(headerOrder.get(processTitleColumn)).replaceAll("\\W", "_");
+                    String processTitle = map.get(headerOrder.get(processTitleColumn)).replaceAll("\\W", "_");
 
-                    if (processMap.containsKey(title)) {
-                        List<Map<?, ?>> rows = processMap.get(title);
+                    if (processMap.containsKey(processTitle)) {
+                        List<Map<?, ?>> rows = processMap.get(processTitle);
                         rows.add(map);
                     } else {
                         List<Map<?, ?>> rows = new ArrayList<>();
                         rows.add(headerOrder);
                         rows.add(map);
-                        processMap.put(title, rows);
+                        processMap.put(processTitle, rows);
                     }
 
                 }
-                for (String t : processMap.keySet()) {
+                for (Entry<String, List<Map<?, ?>>> t : processMap.entrySet()) {
                     Record r = new Record();
-                    r.setId(t);
-                    r.setObject(processMap.get(t));
+                    r.setId(t.getKey());
+                    r.setObject(t.getValue());
                     recordList.add(r);
 
                 }
@@ -524,17 +525,17 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
     @Override
     public List<Record> generateRecordsFromFilenames(List<String> arg0) {
-        return null;
+        return null; //NOSONAR needs to be null
     }
 
     @Override
     public List<String> getAllFilenames() {
-        return null;
+        return null; //NOSONAR needs to be null
     }
 
     @Override
     public List<? extends DocstructElement> getCurrentDocStructs() {
-        return null;
+        return null; //NOSONAR needs to be null
     }
 
     @Override
@@ -544,7 +545,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
     @Override
     public List<String> getPossibleDocstructs() {
-        return null;
+        return null; //NOSONAR needs to be null
     }
 
     @Override
@@ -554,7 +555,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
     @Override
     public List<ImportProperty> getProperties() {
-        return null;
+        return null; //NOSONAR needs to be null
     }
 
     @Override
