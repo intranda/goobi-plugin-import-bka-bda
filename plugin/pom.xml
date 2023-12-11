@@ -2,13 +2,13 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.intranda.goobi.plugins.import</groupId>
   <artifactId>goobi-plugin-bka</artifactId>
-  <version>23.11</version>
+  <version>23.11.1</version>
   <name>Goobi workflow - Plugin Import BKA-BDA</name>
   <url>https://github.com/intranda/goobi-plugin-import-bka-bda</url>
   <properties>
     <jar.name>plugin_intranda_import_bka_bda</jar.name>
     <dest.folder>/opt/digiverso/goobi/plugins/import/</dest.folder>
-    <goobi.version>23.11</goobi.version>
+    <goobi.version>23.11.1</goobi.version>
     <sonar.projectKey>intranda_goobi-plugin-import-bka-bda</sonar.projectKey>
     <sonar.organization>intranda</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
