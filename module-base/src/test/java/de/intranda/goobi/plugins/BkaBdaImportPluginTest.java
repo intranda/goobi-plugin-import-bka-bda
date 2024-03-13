@@ -54,7 +54,7 @@ public class BkaBdaImportPluginTest {
         String log4jFile = resourcesFolder + "log4j2.xml"; // for junit tests in eclipse
         System.setProperty("log4j.configurationFile", log4jFile);
 
-        Path goobiFolder = Paths.get(resourcesFolder + "/config/goobi_config.properties");
+        Path goobiFolder = Paths.get(resourcesFolder + "config/goobi_config.properties");
         ConfigurationHelper.CONFIG_FILE_NAME = goobiFolder.toString();
         ConfigurationHelper.resetConfigurationFile();
         ConfigurationHelper.getInstance().setParameter("goobiFolder", goobiFolder.getParent().getParent().toString() + "/");
