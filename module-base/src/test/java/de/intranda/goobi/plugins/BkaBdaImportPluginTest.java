@@ -43,7 +43,6 @@ public class BkaBdaImportPluginTest {
     private File tempFolder;
     private static String resourcesFolder;
 
-
     @BeforeClass
     public static void setUpClass() throws Exception {
         resourcesFolder = "src/test/resources/"; // for junit tests in eclipse
@@ -64,8 +63,6 @@ public class BkaBdaImportPluginTest {
     public void setUp() throws Exception {
         tempFolder = folder.newFolder("tmp");
 
-
-
         PowerMock.mockStatic(ConfigPlugins.class);
         EasyMock.expect(ConfigPlugins.getPluginConfig(EasyMock.anyString())).andReturn(getConfig()).anyTimes();
         PowerMock.replay(ConfigPlugins.class);
@@ -78,7 +75,6 @@ public class BkaBdaImportPluginTest {
         assertEquals(ImportType.FILE, plugin.getImportTypes().get(0));
         plugin.setImportFolder(tempFolder.getAbsolutePath());
     }
-
 
     @Test
     public void testUploadExcelFile() throws Exception {
@@ -106,10 +102,8 @@ public class BkaBdaImportPluginTest {
         assertEquals("Neue Burg, Nationalbibliothek (heutiger Lesesaal)", rows.get(0).get(headerMap.get("Objekttitel")));
     }
 
-
-
     @Test
-    public void testImportFiles()  throws Exception {
+    public void testImportFiles() throws Exception {
         BkaBdaImportPlugin plugin = new BkaBdaImportPlugin();
         plugin.setImportFolder(tempFolder.getAbsolutePath());
         plugin.setTestMode(true); // ruleset
@@ -123,12 +117,11 @@ public class BkaBdaImportPluginTest {
 
         List<ImportObject> convertedFiles = plugin.generateFiles(records);
 
-        ImportObject io =  convertedFiles.get(0);
+        ImportObject io = convertedFiles.get(0);
 
         assertEquals("1376717487B__XXXXXX2014", io.getProcessTitle());
 
         // TODO open mets file, check metadata
-
 
     }
 
