@@ -18,7 +18,7 @@
 		<rowDataEnd>10000</rowDataEnd>
 		<!-- define if import shall use GoobiScript to run in the background -->
 		<runAsGoobiScript>true</runAsGoobiScript>
-        
+        <imageFolderRootPath>/tmp</imageFolderRootPath>
         <imageFolderHeaderName>Importpfad Bildobjekt</imageFolderHeaderName>
 
 		<mainMetadata rulesetName="CatalogIDDigital" columnName="DMDB-ID" />
