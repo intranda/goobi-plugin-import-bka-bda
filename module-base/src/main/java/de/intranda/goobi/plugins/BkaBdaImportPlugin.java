@@ -203,11 +203,11 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                     if (StringUtils.isNotBlank(metadataValue)) {
                         MetadataType metadataType = prefs.getMetadataTypeByName(rulesetName);
                         Metadata md = new Metadata(metadataType);
-                        if (rulesetName.equals("CatalogIDDigital")) {
+                        if ("CatalogIDDigital".equals(rulesetName)) {
                             metadataValue = metadataValue.replaceAll("\\W", "_");
-                        } else if (rulesetName.equals("Series")) {
+                        } else if ("Series".equals(rulesetName)) {
                             seriesName = metadataValue;
-                        } else if (rulesetName.equals("SubSeries")) {
+                        } else if ("SubSeries".equals(rulesetName)) {
                             subSeriesName = metadataValue;
                         }
                         md.setValue(metadataValue);
@@ -362,7 +362,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
                 prefix = myconfig.getString("/s3/prefix");
             }
 
-            imageFolderRootPath = myconfig.getString("/imageFolderPath", null);
+            imageFolderRootPath = myconfig.getString("/imageFolderPath", "");
             imageFolderHeaderName = myconfig.getString("/imageFolderHeaderName", null);
 
             collection = myconfig.getString("/collection", "");
@@ -389,12 +389,12 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
 
     @Override
     public List<Record> splitRecords(String string) {
-        return null;  //NOSONAR needs to be null
+        return null; //NOSONAR needs to be null
     }
 
     @Override
     public List<String> splitIds(String ids) {
-        return null;  //NOSONAR needs to be null
+        return null; //NOSONAR needs to be null
     }
 
     @Override
@@ -413,7 +413,7 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
     }
 
     @Override
-    public List<Record> generateRecordsFromFile() {  //NOSONAR
+    public List<Record> generateRecordsFromFile() { //NOSONAR
         if (StringUtils.isBlank(workflowTitle)) {
             workflowTitle = form.getTemplate().getTitel();
         }
