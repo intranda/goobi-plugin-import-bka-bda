@@ -8,6 +8,7 @@ published: true
 ## Einführung
 Die vorliegende Dokumentation beschreibt die Installation, die Konfiguration und den Einsatz des Plugins für den Massenimport von vorliegenden Altdaten des Bundesdenkmalamts in Österreich. Die Ausgangsbasis für den Import sind vorliegende Excel-Dateien sowie bereitgestellte Verzeichnisse mit Bilddateien. Der besondere Aufbau der Excel-Datei machte eine deutliche Überarbeitung des Standard-Excel-Import-Plugins notwendig, so dass dieses deutlich davon abweicht.
 
+
 ## Installation
 Um das Plugin nutzen zu können, müssen folgende Dateien installiert werden:
 
@@ -29,14 +30,12 @@ Die Konfiguration erfolgt über die Datei `plugin_intranda_import_bka_bda.xml`. 
 {{CONFIG_CONTENT}}
 
 ### Individuelle Konfigurierbarkeit
-
 Es ist sowohl möglich, eine globale Konfiguration für alle Produktionsvorlagen, als auch individuelle Einstellungen für einzelne Produktionsvorlagen zu erstellen. Dazu kann das Element `config` in der XML Datei wiederholt werden. Wenn in Goobi der Massenimport ausgewählt wurde, wird jeweils derjenige Konfigurationsblock gesucht, bei dem im Element `template` der Name der ausgewählten Produktionsvorlage steht. Existiert solch ein Eintrag nicht, wird die `default`-Konfiguration verwendet. Diese ist durch `*` gekennzeichnet.
 
 ```xml
 <!-- which workflow template shall be used -->
 <template>*</template>
 ```
-
 
 ### Publikationstyp
 Mit dem folgenden Parameter läßt sich der zu verwendende Publikationstyp global festlegen: 
@@ -137,7 +136,7 @@ Das Element `runAsGoobiScript` steuert, ob ein Import asynchron im Hintergrund �
 Mit dem Element `metadata` werden deskriptive Metadaten erzeugt.
 
 Name                 | Typ      | Beschreibung
----------------------|--------- |---
+---------------------|--------- |-------------------------------
 `headerName`         | Attribut | Spaltentitel in der Exceldatei
 `ugh`                | Attribut | Name des Metadatums
 `property`           | Attribut | Name der Eigenschaft
