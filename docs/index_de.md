@@ -23,6 +23,8 @@ Um den Import zu nutzen, muss in den Produktionsvorlagen der Massenimportbereich
 
 Der Import erfolgt anschließend zeilenweise. Dabei wird für jedes Objekt ein neuer Vorgang erzeugt und die konfigurierten Regeln angewendet. Wenn dabei ein valider Datensatz erzeugt wurde und der generierte Vorgangstitel noch nicht vergeben wurde, wird der Vorgang tatsächlich erzeugt und gespeichert. Innerhalb der Excel-Datei nachfolgende Zeilen, die zu dem zu erzeugenden Goobi-Vorgang gehören, werden abhängig von der Konfiguration mit dem gewünschten Strukturtyp erzeugt. Zugehörige Bilder werden hierbei ebenfalls automatisch übernommen und den erzeugten Strukturelementen und Vorgängen zugeordnet.
 
+![Auswahl des Plugins zur Durchführung des Imports](screen1_de.png)
+
 
 ## Konfiguration
 Die Konfiguration erfolgt über die Datei `plugin_intranda_import_bka_bda.xml`. Diese Datei kann im laufenden Betrieb angepasst werden.
