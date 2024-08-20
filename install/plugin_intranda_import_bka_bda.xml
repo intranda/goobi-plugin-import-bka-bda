@@ -1,11 +1,11 @@
 <config_plugin>
-
-
        <config>
+              <!-- which workflow template shall be used -->
               <template>BDA_Bildarchiv</template>
               <!-- publication type to create -->
               <publicationType>Kleinbilddia</publicationType>
               <imageType>Dia</imageType>
+              <!-- which digital collection to use -->
               <collection>Dias</collection>
               <processTitleColumn>Buchtitel</processTitleColumn>
               <!-- define in which row the header is written, usually 1 -->
@@ -16,10 +16,9 @@
               <rowDataEnd>10000</rowDataEnd>
               <!-- define if import shall use GoobiScript to run in the background -->
               <runAsGoobiScript>true</runAsGoobiScript>
-
-
               <!-- column for the path to the images -->
               <imageFolderHeaderName>filename</imageFolderHeaderName>
+              
               <!-- s3 data -->
               <s3 use="true">
                      <endpoint>http://127.0.0.1:9000</endpoint>
@@ -29,6 +28,7 @@
                      <prefix>prefix/</prefix>
               </s3>
 
+              <!-- individual metadata fields read from the excel columns -->
               <mainMetadata rulesetName="CatalogIDDigital" columnName="scanid" />
               <mainMetadata rulesetName="InternalNumber" columnName="interne_nummerierung" />
               <mainMetadata rulesetName="BookTitle" columnName="Buchtitel" />
@@ -60,8 +60,6 @@
               <mainMetadata rulesetName="DateRecorded" columnName="created" />
               <mainMetadata rulesetName="DateModified" columnName="lastModified" />
 
-
-
               <imageMetadata rulesetName="ObjectType" columnName="type" />
               <imageMetadata rulesetName="ImportPath" columnName="filename" />
               <imageMetadata rulesetName="filesize" columnName="filesize" />
@@ -70,7 +68,6 @@
               <imageMetadata rulesetName="verticalresolution" columnName="verticalresolution" />
               <imageMetadata rulesetName="horizontalresolution" columnName="horizontalresolution" />
        </config>
-
 
        <config>
               <!-- which workflow template shall be used -->
@@ -90,7 +87,6 @@
               <rowDataEnd>10000</rowDataEnd>
               <!-- define if import shall use GoobiScript to run in the background -->
               <runAsGoobiScript>true</runAsGoobiScript>
-
               <!-- column for the path to the images -->
               <imageFolderHeaderName>Importpfad Bildobjekt</imageFolderHeaderName>
 
@@ -116,6 +112,5 @@
               <imageMetadata rulesetName="FormerFilePath" columnName="Ursprünglicher Dateipfad" />
               <imageMetadata rulesetName="Copyright" columnName="Rechteinhaber" />
               <imageMetadata rulesetName="ImportPath" columnName="Importpfad Bildobjekt" />
-
        </config>
 </config_plugin>
