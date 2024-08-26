@@ -119,6 +119,23 @@ Mittels des Elements`moveImages` kann gesteuert werden, ob die Bilder kopiert od
 <moveImages>true</moveImages>
 ```
 
+### Import der Bilder aus einem S3-Speicher
+Um Bilder aus einem S3-Speicher zu importieren, muss ebenfalls der oben beschriebene Parameter `<imageFolderHeaderName>` gesetzt sein. Die anderen beiden Elemente bei der Übernahme von Bildern beziehen sich auf Dateisystem Operationen und sind daher nicht notwendig. Stattdessen wird folgender Bereich genutzt:
+
+```xml
+<s3 use="true">
+       <endpoint>http://127.0.0.1:9000</endpoint>
+       <bucketName>workflow-upload-testing</bucketName>
+       <accessKey>minioadmin</accessKey>
+       <accessSecret>minioadmin</accessSecret>
+       <prefix>prefix/</prefix>
+</s3>
+```
+
+Mittels `<s3 use="true">` wird die Nutzung aktiviert. In `<endpoint>` und `<bucketName>` wird der S3 Speicher und bucket definiert und `<accessKey>` und `<accessSecret>` enthalten die Zugangsdaten. Falls die zu importierenden Pfade in `<imageFolderHeaderName>` nicht direkt im Bucket liegen, sondern in einem Unterbereich, kann der `<prefix>` dahin gesetzt werden. Die Pfade werden dann aus dem prefix und der Angabe in der Exceldatei zusammen gesetzt. Da verschieben prinzipbedingt bei S3 nicht möglich ist, können die Bilder nur kopiert werden.
+Sofern sie vom Ursprungspfad verschwinden sollen, müssen sie nach dem Import von Hand gelöscht werden.
+
+
 ### Ausführung mittels GoobiScript
 Das Element `runAsGoobiScript` steuert, ob ein Import asynchron im Hintergrund über die GoobiScript Warteschlange abgearbeitet werden soll oder ob der Import direkt innerhalb der Nutzersession verarbeitet werden soll. Hier muss abgewägt werden, welche Einstellung sinnvoll ist. Soll ein ein Import inklusive Bildern erfolgen oder enthält die Excel-Datei sehr viele Datensätze, so ist es vermutlich sinnvoller, diesen Import als GoobiScript durchzuführen.
 
