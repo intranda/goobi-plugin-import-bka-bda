@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,19 +41,6 @@ import org.goobi.production.importer.Record;
 import org.goobi.production.plugin.interfaces.IImportPluginVersion2;
 import org.goobi.production.properties.ImportProperty;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.transfer.Download;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.forms.MassImportForm;
@@ -61,6 +50,16 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
+import software.amazon.awssdk.transfer.s3.model.DownloadFileRequest;
+import software.amazon.awssdk.transfer.s3.model.FileDownload;
+import software.amazon.awssdk.transfer.s3.progress.LoggingTransferListener;
 import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
 import ugh.dl.DocStructType;
@@ -147,10 +146,14 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
             workflowTitle = form.getTemplate().getTitel();
         }
         readConfig();
-        AmazonS3 s3client = null;
-        TransferManager tm = null;
+        S3AsyncClient s3client = null;
+        S3TransferManager tm = null;
         if (useS3) {
-            s3client = createS3Client();
+            try {
+                s3client = createS3Client();
+            } catch (URISyntaxException e) {
+                log.error(e);
+            }
             tm = createTransferManager(s3client);
         }
 
@@ -574,44 +577,44 @@ public class BkaBdaImportPlugin implements IImportPluginVersion2 {
         return runAsGoobiScript;
     }
 
-    private AmazonS3 createS3Client() {
+    private S3AsyncClient createS3Client() throws URISyntaxException {
 
-        AWSCredentials credentials = new BasicAWSCredentials(accessKey, accessSecret);
-        ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.setSignerOverride("AWSS3V4SignerType");
-
-        return AmazonS3ClientBuilder.standard()
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, Regions.US_EAST_1.name()))
-                .withPathStyleAccessEnabled(true)
-                .withClientConfiguration(clientConfiguration)
-                .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .build();
-    }
-
-    private TransferManager createTransferManager(AmazonS3 s3) {
-
-        return TransferManagerBuilder.standard()
-                .withS3Client(s3)
-                .withDisableParallelDownloads(false)
-                .withMinimumUploadPartSize(Long.valueOf(5 * MB))
-                .withMultipartUploadThreshold(Long.valueOf(16 * MB))
-                .withMultipartCopyPartSize(Long.valueOf(5 * MB))
-                .withMultipartCopyThreshold(Long.valueOf(100 * MB))
+        AwsCredentials credentials = AwsBasicCredentials.create(accessKey, accessSecret);
+        AwsCredentialsProvider prov = StaticCredentialsProvider.create(credentials);
+        return S3AsyncClient.crtBuilder()
+                .region(Region.US_EAST_1)
+                .minimumPartSizeInBytes(10 * MB)
+                .targetThroughputInGbps(20.0)
+                .endpointOverride(new URI(endpoint))
+                .credentialsProvider(prov)
+                .checksumValidationEnabled(false)
                 .build();
 
     }
 
-    public void downloadImage(TransferManager transferManager, String s3Key, Path destinationFolder) {
+    private S3TransferManager createTransferManager(S3AsyncClient s3) {
+
+        return S3TransferManager.builder()
+                .s3Client(s3)
+                .build();
+
+    }
+
+    public void downloadImage(S3TransferManager transferManager, String s3Key, Path destinationFolder) {
 
         Path targetPath = Paths.get(destinationFolder.toString(), Paths.get(s3Key).getFileName().toString());
-        Download dl = transferManager.download(bucketName, s3Key, targetPath.toFile());
-        try {
-            dl.waitForCompletion();
-        } catch (AmazonClientException e) {
-            log.error(e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+
+        DownloadFileRequest downloadFileRequest =
+                DownloadFileRequest.builder()
+                        .getObjectRequest(req -> req.bucket(bucketName).key(s3Key))
+                        .destination(targetPath)
+                        .addTransferListener(LoggingTransferListener.create())
+                        .build();
+
+        FileDownload download = transferManager.downloadFile(downloadFileRequest);
+
+        // Wait for the transfer to complete
+        download.completionFuture().join();
 
     }
 

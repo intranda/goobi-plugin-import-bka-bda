@@ -15,8 +15,8 @@ Detail                      | Description
 **Plugin identifier**       | intranda_import_bka_bda
 **Plugin type**             | import
 **Licence**                 | GPL 2.0 or newer
-**Documentation (German)**  | https://docs.goobi.io/workflow-plugins/v/eng/import/goobi-plugin-import-bka-bda
-**Documentation (English)** | https://docs.goobi.io/workflow-plugins/v/ger/import/goobi-plugin-import-bka-bda
+**Documentation (German)**  | https://docs.goobi.io/workflow-plugins/v/ger/import/goobi-plugin-import-bka-bda
+**Documentation (English)** | https://docs.goobi.io/workflow-plugins/v/eng/import/goobi-plugin-import-bka-bda
 
 ## Goobi details
 

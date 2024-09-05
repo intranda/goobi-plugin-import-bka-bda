@@ -118,6 +118,19 @@ The element `moveImages` can be used to control whether the images are to be cop
 <moveImages>true</moveImages>
 ```
 
+### Importing images from an S3 storage
+To import images from an S3 storage, the `<imageFolderHeaderName>` parameter described above must also be set. The other two elements when importing images relate to file system operations and are therefore not necessary. The following area is used instead:
+
+```xml
+<s3 use="true">
+       <endpoint>http://127.0.0.1:9000</endpoint>
+       <bucketName>workflow-upload-testing</bucketName>
+       <accessKey>minioadmin</accessKey>
+       <accessSecret>minioadmin</accessSecret>
+       <prefix>prefix/</prefix>
+</s3>
+```
+
 ### Execution via GoobiScript
 The element `runAsGoobiScript` controls whether an import should be processed asynchronously in the background via the GoobiScript queue or whether the import should be processed directly within the user session. Here you have to decide which setting makes sense. If an import is to include images or if the Excel file contains a large number of data records, it is probably more sensible to perform this import as a GoobiScript.
 
