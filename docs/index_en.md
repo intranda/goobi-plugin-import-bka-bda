@@ -139,9 +139,9 @@ The element `runAsGoobiScript` controls whether an import should be processed as
 <runAsGoobiScript>true</runAsGoobiScript>
 ```
 
-{% hint style="info" %}
-**Attention:** If the column `identifierHeaderName` does not contain a unique identifier or has not been configured, the option `runAsGoobiScript` cannot be used.
-{% endhint %}
+:::info
+If the column `identifierHeaderName` does not contain a unique identifier or has not been configured, the option `runAsGoobiScript` cannot be used.
+:::info
 
 ### Configuration of the individual Excel columns
 The fields `metadata`, `person` and `group` can be used to import individual columns as metadata or as transaction properties. For this purpose, each field contains a number of attributes and sub-elements.

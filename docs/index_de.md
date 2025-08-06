@@ -144,9 +144,9 @@ Das Element `runAsGoobiScript` steuert, ob ein Import asynchron im Hintergrund �
 <runAsGoobiScript>true</runAsGoobiScript>
 ```
 
-{% hint style="info" %}
-**Achtung:** Wenn die Spalte `identifierHeaderName` keinen eindeutigen Identifier enthält oder nicht konfiguriert wurde, kann die Option `runAsGoobiScript` nicht genutzt werden.
-{% endhint %}
+:::info
+Wenn die Spalte `identifierHeaderName` keinen eindeutigen Identifier enthält oder nicht konfiguriert wurde, kann die Option `runAsGoobiScript` nicht genutzt werden.
+:::
 
 ### Konfiguration der einzelnen Excel-Spalten
 Über die Felder `metadata`, `person` und `group` können einzelne Spalten als Metadatum oder als Vorgangseigenschaft importiert werden. Dazu enthält jedes Feld eine Reihe von Attributen und Unterelementen.
