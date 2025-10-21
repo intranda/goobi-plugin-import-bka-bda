@@ -3,6 +3,10 @@ title: Altdatenimport für das Bundesdenkmalamt Österreich
 identifier: intranda_import_bka_bda
 description: Import-Plugin für den Import von Altdaten für das Bundesdenkmalamt in Österreich
 published: true
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Import Plugin
 ---
 
 ## Einführung
