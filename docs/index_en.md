@@ -3,6 +3,10 @@ title: Legacy data import for the Austrian Federal Monuments Authority
 identifier: intranda_import_bka_bda
 description: Import plugin for importing legacy data for the Federal Monuments Office in Austria
 published: true
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Import Plugin
 ---
 
 ## Introduction
