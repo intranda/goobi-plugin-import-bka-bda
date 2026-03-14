@@ -51,10 +51,10 @@ Mit dem folgenden Parameter läßt sich der zu verwendende Publikationstyp globa
 <publicationType>Monograph</publicationType>
 ```
 
-Jeder Vorgang, der in Goobi mit diesem Plugin angelegt wird, erhält den hier definierten Pulikationstyp.
+Jeder Vorgang, der in Goobi mit diesem Plugin angelegt wird, erhält den hier definierten Publikationstyp.
 
 ### Strukturtypen
-Die Besonderheit dieses Plugins liegt darin, dass aus den sich teilweise wiederholenden Excel-Tabellenzeilen Strukturlemente generiert werden sollen, die zu dem zuvor erzeugten Publikationstyp als Unterelemente angelegt werden sollen. Der hierfür zu verwendende Typ wird mit diesem Parameter festgelegt:
+Die Besonderheit dieses Plugins liegt darin, dass aus den sich teilweise wiederholenden Excel-Tabellenzeilen Strukturelemente generiert werden sollen, die zu dem zuvor erzeugten Publikationstyp als Unterelemente angelegt werden sollen. Der hierfür zu verwendende Typ wird mit diesem Parameter festgelegt:
 
 ```xml
 <imageType>Photograph</imageType>
@@ -109,7 +109,7 @@ Das Element `processTitleRule` dient zur Generierung des Vorgangstitel. Hier ste
 ### Übernahme von Bildern
 Mit Hilfe der Elemente `imageFolderHeaderName`, `imageFolderPath` und `moveImages` können zusätzlich zu den Metadaten auch Bilder importiert werden. In `imageFolderHeaderName` wird hierfür der Spaltenname eingetragen, in dem in der Excel-Datei die Ordnernamen zu finden sind, die die Bilder enthalten. Dort kann entweder ein absoluter Pfad oder auch ein relativer Pfad angegeben werden. Wenn hierbei ein relativer Pfad angegeben wird, muss das Element `imageFolderPath` den `root` Pfad zu den Bildern enthalten.
 
-Mittels des Elements`moveImages` kann gesteuert werden, ob die Bilder kopiert oder verschoben werden sollen.
+Mittels des Elements `moveImages` kann gesteuert werden, ob die Bilder kopiert oder verschoben werden sollen.
 
 ```xml
 <!-- define which column contains the image folder name. Can be combined with <imageFolderPath> prefix or an absolute path.
@@ -141,7 +141,7 @@ Sofern sie vom Ursprungspfad verschwinden sollen, müssen sie nach dem Import vo
 
 
 ### Ausführung mittels GoobiScript
-Das Element `runAsGoobiScript` steuert, ob ein Import asynchron im Hintergrund über die GoobiScript Warteschlange abgearbeitet werden soll oder ob der Import direkt innerhalb der Nutzersession verarbeitet werden soll. Hier muss abgewägt werden, welche Einstellung sinnvoll ist. Soll ein ein Import inklusive Bildern erfolgen oder enthält die Excel-Datei sehr viele Datensätze, so ist es vermutlich sinnvoller, diesen Import als GoobiScript durchzuführen.
+Das Element `runAsGoobiScript` steuert, ob ein Import asynchron im Hintergrund über die GoobiScript Warteschlange abgearbeitet werden soll oder ob der Import direkt innerhalb der Nutzersession verarbeitet werden soll. Hier muss abgewägt werden, welche Einstellung sinnvoll ist. Soll ein Import inklusive Bildern erfolgen oder enthält die Excel-Datei sehr viele Datensätze, so ist es vermutlich sinnvoller, diesen Import als GoobiScript durchzuführen.
 
 ```markup
 <!-- Run the import as GoobiScript -->
